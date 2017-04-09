@@ -12,10 +12,8 @@ import time
 from os import path
 
 #---------------------------------------
-easy = 1
-normal = 1.5
-hard = 2
-mode = easy
+boss_difficult = 1
+boss_count = 0
 #---------------------------------------
 
 # Screen Setting
@@ -105,39 +103,41 @@ class Player(pygame.sprite.Sprite):
             self.power_time = pygame.time.get_ticks()
 
         # unhide if hiden
-        if self.hidden and pygame.time.get_ticks() - self.hide_timer > 1000:
+        if self.hidden and pygame.time.get_ticks() - self.hide_timer > 2000:
             self.hidden = False
             self.rect.centerx = width / 2
             self.rect.bottom = height - 10
+
 
         self.speedx = 0
         self.speedy = 0
         keystate = pygame.key.get_pressed()
 
         if keystate[pygame.K_LEFT]:
-            self.speedx = -5
+            self.speedx = -6
         if keystate[pygame.K_RIGHT]:
-            self.speedx = 5
+            self.speedx = 6
         self.rect.x += self.speedx
 
         if keystate[pygame.K_DOWN]:
-            self.speedy = 5
+            self.speedy = 6
         if keystate[pygame.K_UP]:
-            self.speedy = -5
+            self.speedy = -6
         self.rect.y += self.speedy
 
         if keystate[pygame.K_SPACE]:
             self.shoot()
 
-        if self.rect.right > width:
-            self.rect.right = width
-        if self.rect.left < 0:
-            self.rect.left = 0
+        if not self.hidden:
+            if self.rect.right > width:
+                self.rect.right = width
+            if self.rect.left < 0:
+                self.rect.left = 0
 
-        if self.rect.bottom > height:
-            self.rect.bottom = height
-        if self.rect.top < 0:
-            self.rect.top = 0
+            if self.rect.bottom > height:
+                self.rect.bottom = height
+            if self.rect.top < 0:
+                self.rect.top = 0
 
     def powerup(self):
         self.power += 1
@@ -166,37 +166,39 @@ class Player(pygame.sprite.Sprite):
         self.hidden = True
         self.hide_timer = pygame.time.get_ticks()
         self.rect.centerx = width / 2
-        self.rect.bottom = height + 200
+        self.rect.bottom = height - 10000
 
 
 class Mob(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
+        self.init_pos = [100, 150, 200, 200, 250,
+                         245, 250, 300, 300, 350, 400]
         self.image_orig = random.choice(meteor_img)
         self.image_orig.set_colorkey(black)
         self.image = self.image_orig.copy()
         self.rect = self.image.get_rect()
         self.radius = int(self.rect.width * 0.85 / 2)
         # pygame.draw.circle(self.image, red, self.rect.center, self.radius)
-        self.rect.x = random.randrange(50, 430)
+        self.rect.x = random.choice(self.init_pos)
         self.rect.y = random.randrange(-100, -40)
         self.speedx = 0
-        self.speedy = random.randrange(6, 8)
+        self.speedy = random.randrange(4, 7)
         self.rot = 0
-        self.rot_speed = random.randrange(-8, 8)
+        #self.rot_speed = random.randrange(-8, 8)
         self.last_update = pygame.time.get_ticks()
 
    # def rotate(self):
-        now = pygame.time.get_ticks()
-        if now - self.last_update > 50:
-            self.last_update = now
-            self.rot = (self.rot + self.rot_speed) % 360
-            new_img = pygame.transform.rotate(self.image_orig, self.rot)
-            old_center = self.rect.center
-            self.image = new_img
-            self.rect = self.image.get_rect()
-            self.rect.center = old_center
+        # now = pygame.time.get_ticks()
+        # if now - self.last_update > 50:
+        #     self.last_update = now
+        #     self.rot = (self.rot + self.rot_speed) % 360
+        #     new_img = pygame.transform.rotate(self.image_orig, self.rot)
+        #     old_center = self.rect.center
+        #     self.image = new_img
+        #     self.rect = self.image.get_rect()
+        #     self.rect.center = old_center
 
     def update(self):
         # self.rotate()
@@ -206,7 +208,7 @@ class Mob(pygame.sprite.Sprite):
         if self.rect.top > height + 10 or self.rect.left < -25 or self.rect.right > width + 20:
             self.rect.x = random.randrange(width - self.rect.width)
             self.rect.y = random.randrange(-100, -40)
-            self.speedy = random.randrange(1, 8)
+            self.speedy = random.randrange(4, 7)
 
 
 class Power(pygame.sprite.Sprite):
@@ -310,16 +312,17 @@ player_mini_img = pygame.transform.scale(player_img, (25, 19))
 bullet_img = pygame.image.load(path.join(img_folder, 'laserRed.png')).convert()
 
 meteor_img = []
-meteor_list = ['m1.png','m2.png','m3.png','m4.png','m5.png','m6.png','m7.png','m8.png']
+meteor_list = ['m1.png', 'm2.png', 'm3.png',
+               'm4.png', 'm5.png', 'm6.png', 'm7.png', 'm8.png']
 for img in meteor_list:
     meteor_img.append(pygame.image.load(path.join(img_folder, img)).convert())
 
 explosion_animation = {}
 explosion_animation['lg'] = []
 explosion_animation['sm'] = []
-#------------------------------------
+#--------------Boss------------------
 explosion_animation['sulg'] = []
-#------------------------------------
+#--------------Boss------------------
 explosion_animation['player'] = []
 for i in range(9):
     filename = 'e{}.png'.format(i)
@@ -330,10 +333,10 @@ for i in range(9):
     img_sm = pygame.transform.scale(img, (32, 32))
     explosion_animation['sm'].append(img_sm)
 
-    #---------------------------------------------------------
+    #---------------------------Boss-------------------------
     img_lg = pygame.transform.scale(img, (180, 180))
     explosion_animation['sulg'].append(img_lg)
-    #---------------------------------------------------------
+    #---------------------------Boss--------------------------
 
     filename = 'sx{}.png'.format(i)
     img = pygame.image.load(path.join(img_folder, filename)).convert()
@@ -346,7 +349,7 @@ powerup_img['hp'] = pygame.image.load(
 powerup_img['gun'] = pygame.image.load(
     path.join(img_folder, 'gun.png')).convert()
 
-#--------------------------- Start --------------------------
+#--------------------------- Start Boss edit --------------------------
 
 img_boss = []
 img_boss_damaged = []
@@ -389,9 +392,9 @@ class Boss_0(pygame.sprite.Sprite):
         self.radius = self.rect.width / 2 * 0.8
         self.direction = 1
         self.pattern = 1
-        self.hp = 200 * mode
+        self.hp = 200
         self.ori_hp = self.hp
-        self.ulti = 1 * mode
+        self.ulti = 1
         self.ori_ulti = self.ulti
         self.hit_color_delay = pygame.time.get_ticks()
         self.skill_cooldown = pygame.time.get_ticks()
@@ -425,7 +428,7 @@ class B0P1(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.radius = int(self.rect.width * 0.7 / 2)
         self.hp = 6
-        self.speed = 8 * mode
+        self.speed = 5 + boss_difficult
 
         if n == 1:
             self.rect.centerx = width / 4
@@ -458,7 +461,7 @@ class B0P2(pygame.sprite.Sprite):
         self.rect.y = curBoss.rect.bottom
         self.radius = int(self.rect.width * 0.7 / 2)
         self.hp = 6
-        self.speed = 8 * mode
+        self.speed = 4 + boss_difficult
 
         boss_bullet.add(self)
         all_sprites.add(self)
@@ -491,8 +494,8 @@ class B0P3(pygame.sprite.Sprite):
         self.rect.centerx = random.choice((width / 8, width / 8 * 7))
         self.rect.y = curBoss.rect.bottom
         self.radius = int(self.rect.width * 0.7 / 2)
-        self.direction = 15 * mode
-        self.speed = 2 * mode
+        self.direction = 15 
+        self.speed = 0 + boss_difficult
         self.hp = 4
 
         boss_bullet.add(self)
@@ -503,9 +506,9 @@ class B0P3(pygame.sprite.Sprite):
         self.rect.x += self.direction
 
         if self.rect.centerx <= width / 8:
-            self.direction = 15 * mode
+            self.direction = 15
         elif self.rect.centerx >= width / 8 * 7:
-            self.direction = -15 * mode
+            self.direction = -15
         if self.rect.y >= height + 10:
             self.kill()
         curBoss.skill_cooldown = pygame.time.get_ticks()
@@ -522,11 +525,11 @@ class Boss_1(pygame.sprite.Sprite):
         self.radius = self.rect.width / 2 * 0.8
         self.direction = 1
         self.pattern = 1
-        self.hp = 300 * mode
+        self.hp = 300 
         self.ori_hp = self.hp
         self.hit_color_delay = pygame.time.get_ticks()
         self.skill_cooldown = pygame.time.get_ticks()
-        self.ulti = int(1 * mode)
+        self.ulti = int(1)
         self.ori_ulti = self.ulti
 
     def bullet(self):
@@ -585,7 +588,7 @@ class B1P1(pygame.sprite.Sprite):
         self.rect.y = curBoss.rect.bottom
         self.radius = int(self.rect.width * 0.85 / 2)
         self.hp = 2
-        self.speed = 8 * mode
+        self.speed = 3 + boss_difficult
 
         boss_bullet.add(self)
         all_sprites.add(self)
@@ -619,7 +622,7 @@ class B1P2(pygame.sprite.Sprite):
         self.rect.y = curBoss.rect.bottom
         self.radius = int(self.rect.width * 0.85 / 2)
         self.hp = 15
-        self.speed = 5 * mode
+        self.speed = 3 + boss_difficult
         self.rot = 0
         self.rot_speed = 30
         self.last_update = pygame.time.get_ticks()
@@ -657,7 +660,7 @@ class B1P3(pygame.sprite.Sprite):
         self.rect.y = y
         self.radius = int(self.rect.width * 0.85 / 2)
         self.hp = 3
-        self.speed = 8 * mode
+        self.speed = 4 + boss_difficult
         self.lock = 500
         self.timelock = 1500
         self.force = 1200
@@ -687,7 +690,7 @@ class B1P3(pygame.sprite.Sprite):
                 all_sprites.add(expl)
                 boss_bullet.add(expl)
                 self.kill()
-#---------------------------- End ---------------------------
+#---------------------------- End Boss edit ---------------------------
 
 # Sound
 shoot_sound = pygame.mixer.Sound(path.join(snd_folder, 'laser_shoot.wav'))
@@ -730,12 +733,13 @@ while running:
         player = Player()
         all_sprites.add(player)
 
-        for i in range(9):
+        for i in range(7):
             newmob()
 
         score = 0
 
     clock.tick(fps)
+    
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -765,7 +769,7 @@ while running:
     # BOSS APPEARANCE !!
     if hit_times >= phase:
         hit_times = 0
-        phase *= (mode * 1.5)
+        phase *= (1.5)
         boss_appear = True
 
         for mob in mobs:
@@ -824,8 +828,12 @@ while running:
             curBoss.kill()
             boss_appear = False
             ############ if new boss is added already, delete if ##########
-            if bossOrder <= 1:
-                bossOrder += 1
+            # not delete this if, already make loop for boss 
+            if bossOrder == 0:
+                bossOrder = 1
+            elif bossOrder == 1:
+                bossOrder = 0
+                boss_difficult += 2 #make boss harder after loop 
             for bullet in boss_bullet:
                 bullet.kill()
 
