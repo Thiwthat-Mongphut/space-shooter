@@ -709,16 +709,22 @@ pygame.mixer.music.play(loops=-1)
 count = 3
 game_over = True
 running = True
-#-----------------
+
+#Boss-----------
 hit_times = 0
 boss_appear = False
 phase = 100
 bossOrder = 0
 clone = 0
 now = pygame.time.get_ticks()
+#Boss-------------
 
-#-----------------
+#star bg
+stars_bg_list = [[random.randint(0, width), random.randint(0, height)] for x in range(200)]
+
 while running:
+    
+
     if game_over:
         show_go_screen(count)
         game_over = False
@@ -739,7 +745,16 @@ while running:
         score = 0
 
     clock.tick(fps)
-    
+
+    #bg
+    for star in stars_bg_list:
+        pygame.draw.line(screen, (255, 255, 255), (star[0], star[1]), (star[0], star[1]))
+    star[0] = star[0] - 1
+    if star[0] < 0:
+        star[0] = width
+        star[1] = random.randint(0, height)
+
+    pygame.display.update()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
