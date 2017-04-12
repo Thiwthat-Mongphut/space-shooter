@@ -114,15 +114,15 @@ class Player(pygame.sprite.Sprite):
         keystate = pygame.key.get_pressed()
 
         if keystate[pygame.K_LEFT]:
-            self.speedx = -6
+            self.speedx = -7
         if keystate[pygame.K_RIGHT]:
-            self.speedx = 6
+            self.speedx = 7
         self.rect.x += self.speedx
 
         if keystate[pygame.K_DOWN]:
-            self.speedy = 6
+            self.speedy = 7
         if keystate[pygame.K_UP]:
-            self.speedy = -6
+            self.speedy = -7
         self.rect.y += self.speedy
 
         if keystate[pygame.K_SPACE]:
@@ -720,7 +720,8 @@ now = pygame.time.get_ticks()
 #Boss-------------
 
 #star bg
-stars_bg_list = [[random.randint(0, width), random.randint(0, height)] for x in range(200)]
+stars_bg_list1 = [[random.randint(0, width), random.randint(0, height)] for x in range(150)]
+stars_bg_list2 = [[random.randint(0, width), random.randint(0, height)] for x in range(50)]
 
 while running:
     
@@ -745,16 +746,6 @@ while running:
         score = 0
 
     clock.tick(fps)
-
-    #bg
-    for star in stars_bg_list:
-        pygame.draw.line(screen, (255, 255, 255), (star[0], star[1]), (star[0], star[1]))
-    star[0] = star[0] - 1
-    if star[0] < 0:
-        star[0] = width
-        star[1] = random.randint(0, height)
-
-    pygame.display.update()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -973,12 +964,31 @@ while running:
     #----------------------------------------------------
 
     #screen.blit(bg, bg_rect)
+    #bg
+    for star in stars_bg_list1:
+        
+
+        pygame.draw.rect(screen, (255, 255, 255), (star[0], star[1], 2,2), 0)
+        star[1] = star[1] + 1
+        if star[1] > height :
+            star[1] = -10
+            star[0] = random.randint(0, width)
+    
+    for star in stars_bg_list2:
+        pygame.draw.circle(screen, (255, 255, 255), (star[0], star[1]), 3, 0)
+        star[1] = star[1] + 2
+        if star[1] > height :
+            star[1] = -10
+            star[0] = random.randint(0, width)
+        
 
     all_sprites.draw(screen)
 
     draw_text(screen, 'Score: ' + str(score), 18, width / 2, 10)
     draw_text(screen, 'Lives: ' + str(player.lives), 18, width - 45, 10)
     draw_hp_bar(screen, 5, 5, player.hp)
+
+
 
     pygame.display.flip()
 
