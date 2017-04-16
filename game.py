@@ -132,15 +132,15 @@ class Player(pygame.sprite.Sprite):
         keystate = pygame.key.get_pressed()
 
         if keystate[pygame.K_LEFT]:
-            self.speedx = -7
+            self.speedx = -9
         if keystate[pygame.K_RIGHT]:
-            self.speedx = 7
+            self.speedx = 9
         self.rect.x += self.speedx
 
         if keystate[pygame.K_DOWN]:
-            self.speedy = 7
+            self.speedy = 9
         if keystate[pygame.K_UP]:
-            self.speedy = -7
+            self.speedy = -9
         self.rect.y += self.speedy
 
         if keystate[pygame.K_SPACE]:
@@ -190,15 +190,15 @@ class Mob(pygame.sprite.Sprite):
 
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.init_pos = [100, 150, 200, 200, 250,
-                         245, 250, 300, 300, 350, 400]
+        # self.init_pos = [150, 200, 200, 250,
+        #                  245, 250, 300, 300, 350]
         self.image_orig = random.choice(meteor_img)
         self.image_orig.set_colorkey(black)
         self.image = self.image_orig.copy()
         self.rect = self.image.get_rect()
         self.radius = int(self.rect.width * 0.85 / 2)
         # pygame.draw.circle(self.image, red, self.rect.center, self.radius)
-        self.rect.x = random.choice(self.init_pos)
+        self.rect.x = random.randrange(40, 440, 50)
         self.rect.y = random.randrange(-100, -40)
         self.speedx = 0
         self.speedy = 5
@@ -206,7 +206,7 @@ class Mob(pygame.sprite.Sprite):
         #self.rot_speed = random.randrange(-8, 8)
         self.last_update = pygame.time.get_ticks()
         self.last_shot = pygame.time.get_ticks()
-        self.shoot_delay = random.randint(800,1200)
+        self.shoot_delay = random.randint(1100,1600)
 
     def shoot(self):
         now = pygame.time.get_ticks()
@@ -223,12 +223,11 @@ class Mob(pygame.sprite.Sprite):
         self.shoot()
 
         if self.rect.top > height + 10 or self.rect.left < -25 or self.rect.right > width + 20:
-            self.rect.x = random.randrange(width - self.rect.width)
+            self.rect.x = random.randrange(180, 300, 45)
             self.rect.y = random.randrange(-100, -40)
             self.speedy = random.randrange(4, 7)
         
             
-
 class Power(pygame.sprite.Sprite):
 
     def __init__(self, center):
@@ -911,7 +910,7 @@ while running:
 
             pygame.mixer.music.load(path.join(snd_folder, 'bg.ogg'))
             pygame.mixer.music.play(loops=-1)
-            for i in range(9):
+            for i in range(5):
                 newmob()
 
         # check to see if a bullet hit a boss_bullet
