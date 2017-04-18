@@ -107,7 +107,7 @@ class Player(pygame.sprite.Sprite):
         self.hp = 100
         self.shoot_delay = 250
         self.last_shot = pygame.time.get_ticks()
-        self.lives = 3
+        self.lives = 100
         self.hidden = False
         self.hide_timer = pygame.time.get_ticks()
         self.power = 1
@@ -294,7 +294,7 @@ class Explosion(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = center
         #------------------------------------------------
-        self.radius = self.rect.w / 2 * 0.8
+        self.radius = self.rect.w / 2 * 0.6
         #------------------------------------------------
         self.frame = 0
         self.last_update = pygame.time.get_ticks()
@@ -418,24 +418,42 @@ powerup_img['gun'] = pygame.image.load(
 img_boss = []
 img_boss_damaged = []
 img_boss_bullet = {}
-for i in range(2):
+for i in range(3):
     img_boss_bullet[str(i)] = []
 
-for i in range(2):
-    filename = 'b{}.png'.format(i)
-    image = pygame.image.load(path.join(img_folder, filename)).convert()
-    img_boss.append(image)
+for i in range(3):
+    if i == 2:
+        for i in range(3):
+            filename = 'b2_{}.png'.format(i)
+            image = pygame.image.load(path.join(img_folder, filename)).convert()
+            image.set_colorkey(black)
+            img_boss.append(image)
 
-    filename = 'bd{}.png'.format(i)
-    image = pygame.image.load(path.join(img_folder, filename)).convert()
-    img_boss_damaged.append(image)
+        for i in range(5):
+            filename = 'bb2_{}.png'.format(i)
+            image = pygame.image.load(path.join(img_folder, filename)).convert()
+            image.set_colorkey(black)
+            img_boss_bullet['2'].append(image)
 
-    filename = 'bb{}.png'.format(i)
-    image = pygame.image.load(path.join(img_folder, filename)).convert()
-    img_boss_bullet[str(i)].append(image)
-    if i == 1:
-        image = pygame.image.load(path.join(img_folder, 'bb10.png')).convert()
-        img_boss_bullet['1'].append(image)
+        image = pygame.image.load(path.join(img_folder, 'bd2.png')).convert()
+        image.set_colorkey(black)
+        img_boss_damaged.append(image)
+
+    else:
+        filename = 'b{}.png'.format(i)
+        image = pygame.image.load(path.join(img_folder, filename)).convert()
+        img_boss.append(image)
+
+        filename = 'bd{}.png'.format(i)
+        image = pygame.image.load(path.join(img_folder, filename)).convert()
+        img_boss_damaged.append(image)
+
+        filename = 'bb{}.png'.format(i)
+        image = pygame.image.load(path.join(img_folder, filename)).convert()
+        img_boss_bullet[str(i)].append(image)
+        if i == 1:
+            image = pygame.image.load(path.join(img_folder, 'bb10.png')).convert()
+            img_boss_bullet['1'].append(image)
 
 
 def BossCalling(order):
@@ -443,7 +461,8 @@ def BossCalling(order):
         return Boss_0()
     elif order == 1:
         return Boss_1()
-
+    elif order == 2:
+        return Boss_2()
 
 class Boss_0(pygame.sprite.Sprite):
 
@@ -737,8 +756,12 @@ class B1P3(pygame.sprite.Sprite):
         curBoss.skill_cooldown = pygame.time.get_ticks()
         if pygame.time.get_ticks() - self.startlock > self.lock:
             if pygame.time.get_ticks() - self.startlock < self.force:
-                self.lockx = player.rect.centerx
-                self.locky = player.rect.y
+                if player.rect.y <= 0:
+                    self.lockx = width / 2
+                    self.locky = height
+                else:
+                    self.lockx = player.rect.centerx
+                    self.locky = player.rect.y
             if self.rect.centerx < self.lockx:
                 self.rect.centerx += self.speed
             else:
@@ -750,10 +773,344 @@ class B1P3(pygame.sprite.Sprite):
 
             if pygame.time.get_ticks() - self.startlock > self.timelock:
                 expl_sound.play()
-                expl = Explosion(self.rect.center, 'sm')
+                expl = Explosion(self.rect.center, 'lg')
                 all_sprites.add(expl)
                 boss_bullet.add(expl)
                 self.kill()
+
+
+class Bossbaria(pygame.sprite.Sprite):
+
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = img_boss[2]
+        self.rect = self.image.get_rect()
+        self.rect.centerx = curBoss.rect.centerx
+        self.rect.y = curBoss.rect.bottom + 10
+        self.radius = self.rect.height / 2 * 0.3
+        self.direction = 1
+        self.hp = 250
+        self.status = True
+
+        all_sprites.add(self)
+        boss_baria.add(self)
+
+    def update(self):
+        self.rect.x += self.direction
+        if self.rect.centerx <= width / 2 - 40:
+            self.direction = 1
+        elif self.rect.centerx >= width / 2 + 40:
+            self.direction = -1
+
+        if self.hp <= 0:
+            self.status = False
+            expl_sound.play()
+            expl = Explosion(self.rect.center, 'sulg')
+            all_sprites.add(expl)
+            self.kill()
+
+
+class Boss_2(pygame.sprite.Sprite):
+
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = img_boss[3]
+        self.rect = self.image.get_rect()
+        self.rect.centerx, self.rect.top = width / 2, -80
+        self.radius = self.rect.width / 2 * 0.8
+        self.pattern = 1
+        self.radius = self.rect.width / 2 * 0.8
+        self.direction = 1
+        self.hp = 400
+        self.hit_color_delay = pygame.time.get_ticks()
+        self.skill_cooldown = pygame.time.get_ticks()
+        # bullet controls
+        self.wait_skill_two = pygame.time.get_ticks()
+        self.next_bullet = pygame.time.get_ticks()
+        self.shoot = 20 # number of bullets at pattern 1
+        self.shoot_laser = False
+        self.stop = False
+
+    def appear(self):
+        self.rect.y += 1
+
+    def update(self):
+        # boss moveing(left and right)
+        self.rect.x += self.direction
+        if self.rect.centerx <= width / 2 - 40:
+            self.direction = 1
+        elif self.rect.centerx >= width / 2 + 40:
+            self.direction = -1
+
+        # skill controls
+        if self.pattern == 1:
+            if pygame.time.get_ticks() - self.next_bullet >= 500 and self.shoot > 0:
+                B2P1(1, True); B2P1(2, True); B2P1(3, True); B2P1(4, True)
+                self.next_bullet = pygame.time.get_ticks()
+                self.skill_cooldown = pygame.time.get_ticks()
+                self.shoot -= 1
+            
+            if self.shoot <= 0:
+                if pygame.time.get_ticks() - self.skill_cooldown >= 50:
+                    self.shoot = 40
+                    self.pattern = 2
+                    self.bullet()
+        
+        if self.pattern == 2:
+            if (pygame.time.get_ticks() - self.wait_skill_two >= 2000 and
+                    not self.shoot_laser):
+                self.first_bullet = B2P4(1)
+                B2P4(2); B2P4(3); B2P4(4);
+                self.next_bullet = pygame.time.get_ticks()
+                self.shoot_laser = True
+                 
+            elif (pygame.time.get_ticks() - self.next_bullet >= 80 and
+                    self.shoot_laser and not self.stop):
+                self.last_bullet = B2P4(1)
+                B2P4(2); B2P4(3); B2P4(4);
+                self.next_bullet = pygame.time.get_ticks()
+            
+            if self.shoot_laser:
+                if self.first_bullet.rect.y >= height or self.first_bullet.rect.y <= 0:
+                    self.stop = True
+                    if  self.last_bullet.rect.y >= height:
+                        self.wait_skill_two = pygame.time.get_ticks()
+                        self.next_bullet = pygame.time.get_ticks()
+                        self.shoot = 20
+                        self.shoot_laser = False
+                        self.stop = False
+                        self.pattern = 1
+                        self.bullet()
+                    
+
+    def bullet(self):
+        if self.pattern == 1:
+            B2P1(1, True); B2P1(2, True); B2P1(3, True); B2P1(4, True)
+            B2P2(1); B2P2(2)
+            self.next_bullet = pygame.time.get_ticks()
+        elif self.pattern == 2:
+            B2P3(1); B2P3(2)
+            self.wait_skill_two = pygame.time.get_ticks()
+
+
+class B2P1(pygame.sprite.Sprite):
+
+    def __init__(self, position, shoot=False):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = img_boss_bullet['2'][0]
+        self.rect = self.image.get_rect()
+        if position == 1:
+            self.rect.centerx = (curBoss.rect.centerx / 8) * 4
+        elif position == 2:
+            self.rect.centerx = (curBoss.rect.centerx / 8) * 5
+        elif position == 3:
+            self.rect.centerx = width - (curBoss.rect.centerx / 8) * 4
+        elif position == 4:
+            self.rect.centerx = width - (curBoss.rect.centerx / 8) * 5
+        self.rect.y = curBoss.rect.bottom - 20
+        self.radius = self.rect.width / 2 * 0.4
+        self.hp = 5
+        self.next_bullet = pygame.time.get_ticks()
+        self.shoot = shoot
+        self.speed = 4 + boss_difficult
+        self.position = position
+
+        all_sprites.add(self)
+        boss_bullet.add(self)
+
+    def update(self):
+        self.rect.y += self.speed
+        
+
+# left gun and right gun
+class B2P2(pygame.sprite.Sprite):
+
+    def __init__(self, position):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = img_boss_bullet['2'][1]
+        self.rect = self.image.get_rect()
+        if position == 1:
+            self.rect.centerx = self.rect.width
+            self.rect.y = curBoss.rect.bottom + 5
+        elif position == 2:
+            self.rect.centerx = width - (self.rect.width)
+            self.rect.y = curBoss.rect.bottom + 120
+            new_img = pygame.transform.rotate(self.image, 180)
+            self.image = new_img
+        self.radius = self.rect.width / 2 * 0.6
+        self.hp = 15
+        self.direction = 1
+        self.position = position
+        self.move_loop = 1
+        self.speed = 2
+        self.shoot_time = pygame.time.get_ticks()
+        self.past_pos = self.rect.y
+        self.stop = False
+        
+        all_sprites.add(self)
+        boss_bullet.add(self)
+
+        
+    def update(self):
+        # stop moving to shoot bullets
+        if abs(self.rect.y - self.past_pos) >= 90:
+            self.stop = True
+            if self.position == 1:
+                self.bullet = B2P2_bullet(self.rect.right + 10, self.rect.centery, self.position)
+            elif self.position == 2:
+                self.bullet = B2P2_bullet(self.rect.left - 10, self.rect.centery, self.position)
+            self.past_pos = self.rect.y
+            self.shoot_time = pygame.time.get_ticks()
+        # shoot bullets while stop
+        if self.stop:
+            if pygame.time.get_ticks() - self.shoot_time >= 1500:
+                self.stop = False
+            else:
+                if pygame.time.get_ticks() - self.bullet.delay >= 400:
+                    if self.position == 1:
+                        self.bullet = B2P2_bullet(self.rect.right + 13, self.rect.centery, self.position)
+                    elif self.position == 2:
+                        self.bullet = B2P2_bullet(self.rect.left - 13, self.rect.centery, self.position)
+        # move the gun
+        elif not self.stop:
+            if self.direction == 1:
+                self.rect.y += self.speed
+            elif self.direction == 2:
+                self.rect.y -= self.speed
+        # move down and up and remove
+        if self.move_loop > 0:
+            if self.rect.y >= height - 10:
+                self.direction = 2
+                self.move_loop -= 1
+            elif self.rect.y <= curBoss.rect.bottom + 5:
+                self.direction = 1
+                self.move_loop -= 1
+        if self.move_loop < 0 or self.rect.y > height + 5 or self.rect.y <= curBoss.rect.bottom:
+            self.kill()    
+
+
+# bullets of gun
+class B2P2_bullet(pygame.sprite.Sprite):
+
+    def __init__(self, x, y, direction):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = img_boss_bullet['2'][2]
+        if direction in [3, 4]:
+            new_img = pygame.transform.rotate(self.image, 90)
+            self.image = new_img
+            self.rect = self.image.get_rect()
+            self.rect.centerx = x
+            self.rect.top = y
+        else:
+            self.rect = self.image.get_rect()
+            self.rect.centerx = x
+            self.rect.centery = y
+        self.radius = self.rect.width / 2 * 0.4
+        self.direction = direction
+        self.hp = 1
+        self.speed = 3 + boss_difficult
+        self.delay = pygame.time.get_ticks()
+
+        all_sprites.add(self)
+        boss_bullet.add(self)
+
+    def update(self):
+        if self.direction == 1:
+            self.rect.x += self.speed
+        elif self.direction == 2:
+            self.rect.x -= self.speed
+        elif self.direction == 3 or self.direction == 4:
+            self.rect.y += self.speed
+        if self.rect.x <= 0 or self.rect.x >= width:
+            self.kill() 
+
+
+# gun top left and right at pattern 2
+class B2P3(pygame.sprite.Sprite):
+
+    def __init__(self, position):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = img_boss_bullet['2'][1]
+        new_img = pygame.transform.rotate(self.image, 270)
+        self.image = new_img
+        self.rect = self.image.get_rect()
+        if position == 1:
+            self.rect.centerx = width / 2  - (curBoss.rect.width / 2 + 60)
+        elif position == 2:
+            self.rect.centerx = width / 2  + (curBoss.rect.width / 2 + 60)
+        self.rect.y = curBoss.rect.bottom - 80
+        self.radius = self.rect.width / 2 * 0.6
+        self.position = position
+        self.hp = 15
+        self.num_bullet = 10 # number of bullets at pattern 1
+        self.bullet = B2P2_bullet(self.rect.centerx, self.rect.bottom + 7, self.position + 2)
+
+        all_sprites.add(self)
+        boss_bullet.add(self)
+    
+    def update(self):
+        if pygame.time.get_ticks() - self.bullet.delay >= 400 and self.num_bullet > 0:
+            self.bullet = B2P2_bullet(self.rect.centerx, self.rect.bottom + 7, self.position + 2)
+            self.num_bullet -= 1
+
+        if self.num_bullet <= 0:
+            self.kill()
+
+
+# laser beam
+class B2P4(pygame.sprite.Sprite):
+
+    def __init__(self, position):
+        pygame.sprite.Sprite.__init__(self)
+        if position == 1:
+            self.image = img_boss_bullet['2'][3]
+            self.rect = self.image.get_rect()
+            self.rect.centerx = width / 2 - 20
+        elif position == 2:
+            self.image = img_boss_bullet['2'][4]
+            self.rect = self.image.get_rect() 
+            self.rect.centerx = width / 2 - 60
+        elif position == 3:
+            self.image = img_boss_bullet['2'][3]
+            self.rect = self.image.get_rect()
+            self.rect.centerx = width / 2 + 20
+        elif position == 4:
+            self.image = img_boss_bullet['2'][4]
+            self.rect = self.image.get_rect()
+            self.rect.centerx = width / 2 + 60
+        self.rect.y = curBoss.rect.bottom + 30
+        self.radius = self.rect.width / 2 * 0.8
+        self.position = position
+        self.speed = 3 + boss_difficult
+        self.change_direct = False
+
+        all_sprites.add(self)
+        boss_bullet.add(self)
+
+    def update(self):
+        # change direction of bullets
+        if self.position in [1, 2]:
+            if self.rect.centerx <= 100 and not self.change_direct:
+                self.change_direct = True
+            elif not self.change_direct:
+                self.rect.x -= self.speed
+                self.rect.y += 8
+            else:
+                self.rect.x += self.speed
+                self.rect.y += 8
+        elif self.position in [3, 4]:
+            if self.rect.centerx >= width - 100 and not self.change_direct:
+                self.change_direct = True
+            elif not self.change_direct:
+                self.rect.x += self.speed
+                self.rect.y += 8
+            else:
+                self.rect.x -= self.speed
+                self.rect.y += 8
+
+        if self.rect.y >= height:
+            self.kill()
+
 #---------------------------- End Boss edit ---------------------------
 
 # Sound
@@ -777,9 +1134,10 @@ running = True
 #Boss-----------
 hit_times = 0
 boss_appear = False
-phase = 100
+phase = 65
 bossOrder = 0
 clone = 0
+B2_baria = False
 now = pygame.time.get_ticks()
 #Boss-------------
 
@@ -798,6 +1156,7 @@ while running:
         powerups = pygame.sprite.Group()
         #-------------------------------------
         boss_bullet = pygame.sprite.Group()
+        boss_baria = pygame.sprite.Group()
         #-------------------------------------
 
         player = Player()
@@ -840,7 +1199,8 @@ while running:
     # BOSS APPEARANCE !!
     if hit_times >= phase:
         hit_times = 0
-        phase *= (1.5)
+        # mobs will be increased in each time when boss appear
+        phase += phase * 0.3
         boss_appear = True
 
         for mob in mobs:
@@ -869,11 +1229,19 @@ while running:
             draw_hp_bar(screen, 5, 5, player.hp)
             pygame.display.flip()
 
+        # at boss 2, add baria and control bullets by itself
+        if bossOrder == 2:
+            baria = Bossbaria()
+            B2_baria = True
+            curBoss.bullet()
+
+
     # hitting check
     if boss_appear:
-        if len(boss_bullet) == 0 and pygame.time.get_ticks() - curBoss.skill_cooldown > 250:
-            curBoss.bullet()
-            curBoss.pattern += 1
+        if bossOrder != 2:
+            if len(boss_bullet) == 0 and pygame.time.get_ticks() - curBoss.skill_cooldown > 250:
+                curBoss.bullet()
+                curBoss.pattern += 1
 
         # check to see if a bullet hit boss
         hits = pygame.sprite.spritecollide(curBoss, bullets, True)
@@ -892,10 +1260,16 @@ while running:
 
         # color of boss
         if len(hits) == 0 and pygame.time.get_ticks() - curBoss.hit_color_delay >= 150:
-            curBoss.image = img_boss[bossOrder]
-
+            if bossOrder == 2:
+                curBoss.image = img_boss[3]
+            else:
+                curBoss.image = img_boss[bossOrder]
+        
         # if boss was killed call mobs change music
         if curBoss.hp <= 0:
+            expl_sound.play()
+            expl = Explosion(curBoss.rect.center, 'sulg')
+            all_sprites.add(expl)
             curBoss.kill()
             boss_appear = False
             ############ if new boss is added already, delete if ##########
@@ -903,6 +1277,8 @@ while running:
             if bossOrder == 0:
                 bossOrder = 1
             elif bossOrder == 1:
+               bossOrder = 2
+            elif bossOrder == 2:
                 bossOrder = 0
                 boss_difficult += 2 #make boss harder after loop 
             for bullet in boss_bullet:
@@ -968,6 +1344,39 @@ while running:
                 player.lives -= 1
                 player.hp = 100
                 count -= 1
+
+        # check to see if player collide with baria
+        if bossOrder == 2 and B2_baria:
+            if baria.status:
+                if pygame.sprite.collide_rect(baria, player):
+                    player.hp = 0
+                    expl = Explosion(hit.rect.center, 'sm')
+                    all_sprites.add(expl)
+
+                    if player.hp <= 0:
+                        player_die_sound.play()
+                        death_explos = Explosion(player.rect.center, 'player')
+                        all_sprites.add(death_explos)
+                        if player.lives < 0:
+                            player.kill()
+                        player.hide()
+                        player.lives -= 1
+                        player.hp = 100
+                        count -= 1
+
+                # check to see if a bullet hit boss baria
+                hits = pygame.sprite.spritecollide(baria, bullets, True)
+                for hit in hits:
+                    score += 50
+                    baria.hp -= hit.radius
+                    expl = Explosion(hit.rect.center, 'sm')
+                    all_sprites.add(expl)
+                    expl_sound.play()
+
+                    if random.random() == 1:
+                        pow = Power(hit.rect.center)
+                        all_sprites.add(pow)
+                        powerups.add(pow)
 
     #------------------------ End ---------------------------
 
