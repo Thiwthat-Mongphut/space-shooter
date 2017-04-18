@@ -107,7 +107,7 @@ class Player(pygame.sprite.Sprite):
         self.hp = 100
         self.shoot_delay = 250
         self.last_shot = pygame.time.get_ticks()
-        self.lives = 100
+        self.lives = 3
         self.hidden = False
         self.hide_timer = pygame.time.get_ticks()
         self.power = 1
@@ -786,7 +786,7 @@ class Bossbaria(pygame.sprite.Sprite):
         self.image = img_boss[2]
         self.rect = self.image.get_rect()
         self.rect.centerx = curBoss.rect.centerx
-        self.rect.y = curBoss.rect.bottom + 10
+        self.rect.y = curBoss.rect.bottom - 50
         self.radius = self.rect.height / 2 * 0.3
         self.direction = 1
         self.hp = 250
