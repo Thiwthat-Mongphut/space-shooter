@@ -198,7 +198,7 @@ class Mob(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.radius = int(self.rect.width * 0.85 / 2)
         # pygame.draw.circle(self.image, red, self.rect.center, self.radius)
-        self.rect.x = random.randrange(40, 440, 50)
+        self.rect.x = random.randrange(70, 410, 45)
         self.rect.y = random.randrange(-100, -40)
         self.speedx = 0
         self.speedy = 5
@@ -223,11 +223,10 @@ class Mob(pygame.sprite.Sprite):
         self.shoot()
 
         if self.rect.top > height + 10 or self.rect.left < -25 or self.rect.right > width + 20:
-            self.rect.x = random.randrange(180, 300, 45)
+            self.rect.x = random.randrange(70, 410, 45)
             self.rect.y = random.randrange(-100, -40)
-            self.speedy = random.randrange(4, 7)
-        
-            
+            self.speedy = 5
+                   
 class Power(pygame.sprite.Sprite):
 
     def __init__(self, center):
@@ -317,69 +316,96 @@ class Explosion(pygame.sprite.Sprite):
 def button(x,y,w,h):
     mouse_pos = pygame.mouse.get_pos()
     mouse_click = pygame.mouse.get_pressed()
-    pygame.draw.rect(screen, black, (x,y,w,h), 1)
-    if x + w > mouse_pos[0] and y+h > mouse_pos[1]:
+    pygame.draw.rect(screen, black, (x,y,w,h),1)
+    if x + w > mouse_pos[0] and x < mouse_pos[0] and y+h > mouse_pos[1] and y < mouse_pos[1]:
         if mouse_click[0] == 1:
             return True
 
 def main_menu(x):
+    pygame.display.flip()
     highscore = get_hs()
-    if x != 0:
+    if x == 3:
+
         draw_text(screen, 'START', 30, width / 2, 480)
-        draw_text(screen, 'HIGH SCORE:' + str(highscore), 30, width / 2, 510)
+        draw_text(screen, 'HIGH SCORE: ' + str(highscore), 30, width / 2, 510)
         draw_text(screen, 'EXIT', 30, width / 2, 540)
+        for star in stars_bg_list1:
+            pygame.draw.rect(screen, white, (star[0], star[1], 1,1), 0)
+            star[1] = star[1] + 1
+            if star[1] > height :
+                star[1] = -10
+                star[0] = random.randint(0, width)
+        for star in stars_bg_list2:
+            pygame.draw.circle(screen, white, (star[0], star[1]), 2, 0)
+            star[1] = star[1] + 2
+            if star[1] > height :
+                star[1] = -10
+                star[0] = random.randint(0, width)
+
+        waiting = True
+        while waiting:
+            clock.tick(fps)
+            for event in pygame.event.get():
+                if button(200,475,80,25):
+                    waiting = False
+                if button(212,538,55,23):
+                    pygame.quit()
+                    quit()
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    quit()
+            screen.blit(logo, (25, 100))
+            pygame.display.update()
+
+def game_over_scr():
+    highscore = get_hs()
+    draw_text(screen, 'GAME OVER', 60, width / 2, height *0.25)
+    draw_text(screen, 'TRY AGAIN', 30, width/2, 550)
+    print(highscore)
+    print(score)
+    if score > highscore:
+        highscore = score
+        draw_text(screen, 'NEW HIGH SCORE', 40, width / 2, height / 2 + 50)
+        get_hs(highscore)
     else:
-        draw_text(screen, 'GAME OVER', 60, width / 2, height *0.25)
-        if score > highscore:
-            highscore = score
-            draw_text(screen, 'NEW HIGH SCORE', 40, width / 2, height / 2 + 50)
-            get_hs(highscore)
-        else:
-            draw_text(screen, 'HIGH SCORE: ' + str(highscore), 40, width / 2, height / 2 + 50)
-
-
-    for star in stars_bg_list1:
-        pygame.draw.rect(screen, white, (star[0], star[1], 1,1), 0)
-        star[1] = star[1] + 1
-        if star[1] > height :
-            star[1] = -10
-            star[0] = random.randint(0, width)
-    for star in stars_bg_list2:
-        pygame.draw.circle(screen, white, (star[0], star[1]), 2, 0)
-        star[1] = star[1] + 2
-        if star[1] > height :
-            star[1] = -10
-            star[0] = random.randint(0, width)
-    pygame.display.update()
+        draw_text(screen, 'HIGH SCORE: ' + str(highscore), 40, width / 2, height / 2 + 50)
 
     waiting = True
     while waiting:
         clock.tick(fps)
-
         for event in pygame.event.get():
-            if button(200,475,80,25):
-                waiting = False
+            if button(180,550,120,20):
+                screen.fill(black)
+                return
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
-
+                #screen.blit(logo, (0, 0))
         pygame.display.update()
+
+    
+    
+    
+
+    
         
 
 # Graphic
 #bg = pygame.image.load(path.join(img_folder, 'menu.jpg')).convert()
 #bg_rect = bg.get_rect()
+logo = pygame.image.load(path.join(img_folder, 'logo.png')).convert_alpha()
+#logo_rect = logo.get_rect()
 
-player_img = pygame.image.load(path.join(img_folder, 'plane.png')).convert()
+player_img = pygame.image.load(path.join(img_folder, 'plane.png')).convert_alpha()
 player_mini_img = pygame.transform.scale(player_img, (25, 19))
-bullet_img = pygame.image.load(path.join(img_folder, 'laserBlue.png')).convert()
-bulletred_img = pygame.image.load(path.join(img_folder, 'laserRed.png')).convert()
+bullet_img = pygame.image.load(path.join(img_folder, 'laserBlue.png')).convert_alpha()
+bulletred_img = pygame.image.load(path.join(img_folder, 'laserRed.png')).convert_alpha()
 
 meteor_img = []
 meteor_list = ['m1.png', 'm2.png', 'm3.png',
                'm4.png', 'm5.png', 'm6.png', 'm7.png', 'm8.png']
 for img in meteor_list:
-    meteor_img.append(pygame.image.load(path.join(img_folder, img)).convert())
+    meteor_img.append(pygame.image.load(path.join(img_folder, img)).convert_alpha())
 
 explosion_animation = {}
 explosion_animation['lg'] = []
@@ -390,7 +416,7 @@ explosion_animation['sulg'] = []
 explosion_animation['player'] = []
 for i in range(9):
     filename = 'e{}.png'.format(i)
-    img = pygame.image.load(path.join(img_folder, filename)).convert()
+    img = pygame.image.load(path.join(img_folder, filename)).convert_alpha()
     img.set_colorkey(black)
     img_lg = pygame.transform.scale(img, (75, 75))
     explosion_animation['lg'].append(img_lg)
@@ -403,15 +429,15 @@ for i in range(9):
     #---------------------------Boss--------------------------
 
     filename = 'sx{}.png'.format(i)
-    img = pygame.image.load(path.join(img_folder, filename)).convert()
+    img = pygame.image.load(path.join(img_folder, filename)).convert_alpha()
     img.set_colorkey(black)
     explosion_animation['player'].append(img)
 
 powerup_img = {}
 powerup_img['hp'] = pygame.image.load(
-    path.join(img_folder, 'hp.png')).convert()
+    path.join(img_folder, 'hp.png')).convert_alpha()
 powerup_img['gun'] = pygame.image.load(
-    path.join(img_folder, 'gun.png')).convert()
+    path.join(img_folder, 'gun.png')).convert_alpha()
 
 #--------------------------- Start Boss edit --------------------------
 
@@ -425,34 +451,34 @@ for i in range(3):
     if i == 2:
         for i in range(3):
             filename = 'b2_{}.png'.format(i)
-            image = pygame.image.load(path.join(img_folder, filename)).convert()
+            image = pygame.image.load(path.join(img_folder, filename)).convert_alpha()
             image.set_colorkey(black)
             img_boss.append(image)
 
         for i in range(5):
             filename = 'bb2_{}.png'.format(i)
-            image = pygame.image.load(path.join(img_folder, filename)).convert()
+            image = pygame.image.load(path.join(img_folder, filename)).convert_alpha()
             image.set_colorkey(black)
             img_boss_bullet['2'].append(image)
 
-        image = pygame.image.load(path.join(img_folder, 'bd2.png')).convert()
+        image = pygame.image.load(path.join(img_folder, 'bd2.png')).convert_alpha()
         image.set_colorkey(black)
         img_boss_damaged.append(image)
 
     else:
         filename = 'b{}.png'.format(i)
-        image = pygame.image.load(path.join(img_folder, filename)).convert()
+        image = pygame.image.load(path.join(img_folder, filename)).convert_alpha()
         img_boss.append(image)
 
         filename = 'bd{}.png'.format(i)
-        image = pygame.image.load(path.join(img_folder, filename)).convert()
+        image = pygame.image.load(path.join(img_folder, filename)).convert_alpha()
         img_boss_damaged.append(image)
 
         filename = 'bb{}.png'.format(i)
-        image = pygame.image.load(path.join(img_folder, filename)).convert()
+        image = pygame.image.load(path.join(img_folder, filename)).convert_alpha()
         img_boss_bullet[str(i)].append(image)
         if i == 1:
-            image = pygame.image.load(path.join(img_folder, 'bb10.png')).convert()
+            image = pygame.image.load(path.join(img_folder, 'bb10.png')).convert_alpha()
             img_boss_bullet['1'].append(image)
 
 
@@ -501,7 +527,6 @@ class Boss_0(pygame.sprite.Sprite):
         if self.ulti <= 0 and self.pattern == 3:
             self.ulti = self.ori_ulti
 
-
 class B0P1(pygame.sprite.Sprite):
 
     def __init__(self, n):
@@ -530,7 +555,6 @@ class B0P1(pygame.sprite.Sprite):
         if self.rect.y >= height + 10:
             self.kill()
         curBoss.skill_cooldown = pygame.time.get_ticks()
-
 
 class B0P2(pygame.sprite.Sprite):
 
@@ -566,7 +590,6 @@ class B0P2(pygame.sprite.Sprite):
                 curBoss.ulti -= 1
                 curBoss.pattern += 1
 
-
 class B0P3(pygame.sprite.Sprite):
 
     def __init__(self):
@@ -595,7 +618,6 @@ class B0P3(pygame.sprite.Sprite):
         if self.rect.y >= height + 10:
             self.kill()
         curBoss.skill_cooldown = pygame.time.get_ticks()
-
 
 class Boss_1(pygame.sprite.Sprite):
 
@@ -659,7 +681,6 @@ class Boss_1(pygame.sprite.Sprite):
         if self.ulti <= 0 and self.pattern == 3:
             self.ulti = self.ori_ulti
 
-
 class B1P1(pygame.sprite.Sprite):
 
     def __init__(self, x):
@@ -691,7 +712,6 @@ class B1P1(pygame.sprite.Sprite):
                     rectx = i * divide
                     B1P1(rectx)
                 curBoss.ulti -= 1
-
 
 class B1P2(pygame.sprite.Sprite):
 
@@ -729,7 +749,6 @@ class B1P2(pygame.sprite.Sprite):
             self.image = new_img
             self.rect = self.image.get_rect()
             self.rect.center = old_center
-
 
 class B1P3(pygame.sprite.Sprite):
 
@@ -778,7 +797,6 @@ class B1P3(pygame.sprite.Sprite):
                 boss_bullet.add(expl)
                 self.kill()
 
-
 class Bossbaria(pygame.sprite.Sprite):
 
     def __init__(self):
@@ -808,7 +826,6 @@ class Bossbaria(pygame.sprite.Sprite):
             expl = Explosion(self.rect.center, 'sulg')
             all_sprites.add(expl)
             self.kill()
-
 
 class Boss_2(pygame.sprite.Sprite):
 
@@ -892,7 +909,6 @@ class Boss_2(pygame.sprite.Sprite):
             B2P3(1); B2P3(2)
             self.wait_skill_two = pygame.time.get_ticks()
 
-
 class B2P1(pygame.sprite.Sprite):
 
     def __init__(self, position, shoot=False):
@@ -920,8 +936,6 @@ class B2P1(pygame.sprite.Sprite):
 
     def update(self):
         self.rect.y += self.speed
-        
-
 # left gun and right gun
 class B2P2(pygame.sprite.Sprite):
 
@@ -987,8 +1001,6 @@ class B2P2(pygame.sprite.Sprite):
                 self.move_loop -= 1
         if self.move_loop < 0 or self.rect.y > height + 5 or self.rect.y <= curBoss.rect.bottom:
             self.kill()    
-
-
 # bullets of gun
 class B2P2_bullet(pygame.sprite.Sprite):
 
@@ -1023,8 +1035,6 @@ class B2P2_bullet(pygame.sprite.Sprite):
             self.rect.y += self.speed
         if self.rect.x <= 0 or self.rect.x >= width:
             self.kill() 
-
-
 # gun top left and right at pattern 2
 class B2P3(pygame.sprite.Sprite):
 
@@ -1055,8 +1065,6 @@ class B2P3(pygame.sprite.Sprite):
 
         if self.num_bullet <= 0:
             self.kill()
-
-
 # laser beam
 class B2P4(pygame.sprite.Sprite):
 
@@ -1140,13 +1148,13 @@ clone = 0
 B2_baria = False
 now = pygame.time.get_ticks()
 #Boss-------------
-
-
+def teleport():
+    pass
 
 while running:
-    
-
+    #print(count)
     if game_over:
+        #print(count)
         main_menu(count)
         game_over = False
         all_sprites = pygame.sprite.Group()
@@ -1167,7 +1175,13 @@ while running:
 
         
 
+        
+        if count == 0:
+            count = 3
+            game_over_scr()
         score = 0
+
+    
 
     clock.tick(fps)
 
@@ -1189,7 +1203,7 @@ while running:
         expl = Explosion(hit.rect.center, 'lg')
         all_sprites.add(expl)
 
-        if random.random() > 0.9:
+        if random.random() > 0.95:
             pow = Power(hit.rect.center)
             all_sprites.add(pow)
             powerups.add(pow)
@@ -1274,11 +1288,15 @@ while running:
             boss_appear = False
             ############ if new boss is added already, delete if ##########
             # not delete this if, already make loop for boss 
-            if bossOrder == 0:
-                bossOrder = 1
-            elif bossOrder == 1:
-               bossOrder = 2
-            elif bossOrder == 2:
+            # if bossOrder == 0:
+            #     bossOrder = 1
+            # elif bossOrder == 1:
+            #    bossOrder = 2
+            # elif bossOrder == 2:
+            #     bossOrder = 0
+
+            bossOrder += 1
+            if bossOrder == 3:
                 bossOrder = 0
                 boss_difficult += 2 #make boss harder after loop 
             for bullet in boss_bullet:
@@ -1326,6 +1344,7 @@ while running:
                 player.lives -= 1
                 player.hp = 100
                 count -= 1
+                
                 break
 
         # check to see if player collide with boss
@@ -1344,6 +1363,7 @@ while running:
                 player.lives -= 1
                 player.hp = 100
                 count -= 1
+                
 
         # check to see if player collide with baria
         if bossOrder == 2 and B2_baria:
@@ -1363,6 +1383,7 @@ while running:
                         player.lives -= 1
                         player.hp = 100
                         count -= 1
+                        
 
                 # check to see if a bullet hit boss baria
                 hits = pygame.sprite.spritecollide(baria, bullets, True)
@@ -1407,7 +1428,7 @@ while running:
     hits = pygame.sprite.spritecollide(player, powerups, True)
     for hit in hits:
         if hit.type == 'hp':
-            player.hp += random.randrange(10, 30)
+            player.hp += random.randrange(30, 50)
             if player.hp >= 100:
                 player.hp = 100
         if hit.type == 'gun':
@@ -1480,8 +1501,8 @@ while running:
 
     all_sprites.draw(screen)
 
-    draw_text(screen, 'Score: ' + str(score), 18, width / 2, 10)
-    draw_text(screen, 'Lives: ' + str(player.lives), 18, width - 45, 10)
+    draw_text(screen, 'Score: ' + str(score), 25, width / 2, 2)
+    draw_text(screen, 'Lives: ' + str(player.lives), 25, width - 45, 2)
     draw_hp_bar(screen, 5, 5, player.hp)
 
 
