@@ -361,8 +361,8 @@ def game_over_scr():
     highscore = get_hs()
     draw_text(screen, 'GAME OVER', 60, width / 2, height *0.25)
     draw_text(screen, 'TRY AGAIN', 30, width/2, 550)
-    print(highscore)
-    print(score)
+    #print(highscore)
+    #print(score)
     if score > highscore:
         highscore = score
         draw_text(screen, 'NEW HIGH SCORE', 40, width / 2, height / 2 + 50)
